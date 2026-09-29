@@ -127,7 +127,7 @@
 
 
 BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT);
-BLE_HIDS_DEF(m_hids, NRF_SDH_BLE_TOTAL_LINK_COUNT); /**< BLE NUS service instance. */
+BLE_HIDS_DEF(m_hids, NRF_SDH_BLE_TOTAL_LINK_COUNT, 1); /**< BLE NUS service instance. */
 NRF_BLE_GATT_DEF(m_gatt);                         /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                           /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising);               /**< Advertising module instance. */
