@@ -678,6 +678,7 @@ ASMFLAGS += -DM_USE_THREAD_BACKEND=0
 # Linker flags
 LDFLAGS += $(OPT)
 LDFLAGS += -mthumb -mabi=aapcs -L$(SDK_ROOT)/modules/nrfx/mdk -T$(LINKER_SCRIPT)
+LDFLAGS += -Wl,--print-memory-usage
 LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # let linker dump unused sections
