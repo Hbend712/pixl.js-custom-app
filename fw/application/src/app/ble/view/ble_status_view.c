@@ -17,27 +17,30 @@ static void ble_status_view_on_draw(mui_view_t *p_view, mui_canvas_t *p_canvas) 
 }
 
 static void ble_status_view_on_input(mui_view_t *p_view, mui_input_event_t *event) {
-    ble_status_view_t *p_ble_status_view = p_view->user_data;
-    if (event->type == INPUT_TYPE_SHORT || event->type == INPUT_TYPE_REPEAT || event->type == INPUT_TYPE_LONG) {
-        switch (event->key) {
-        case INPUT_KEY_LEFT:
-        case INPUT_KEY_RIGHT:
-            if (p_ble_status_view->page == 1) {
-                p_ble_status_view->page = 0;
-            } else {
-                p_ble_status_view->page = 1;
-            }
+    static bool paused = false;
 
-            if (p_ble_status_view->event_cb) {
-                p_ble_status_view->event_cb(BLE_STATUS_VIEW_EVENT_UPDATE, p_ble_status_view);
-            }
-            break;
-        case INPUT_KEY_CENTER:
-            if (p_ble_status_view->event_cb) {
-                p_ble_status_view->event_cb(BLE_STATUS_VIEW_BLE_DISABLE, p_ble_status_view);
-            }
-            break;
+    (void)p_view;
+
+    if (event->type != INPUT_TYPE_SHORT && event->type != INPUT_TYPE_REPEAT) {
+        return;
+    }
+
+    switch (event->key) {
+    case INPUT_KEY_LEFT:
+        if (!paused) {
+            ble_hid_scroll(1);
         }
+        break;
+
+    case INPUT_KEY_RIGHT:
+        if (!paused) {
+            ble_hid_scroll(-1);
+        }
+        break;
+
+    case INPUT_KEY_CENTER:
+        paused = !paused;
+        break;
     }
 }
 

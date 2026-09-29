@@ -32,6 +32,7 @@ void ble_disable();
 
 void ble_nus_set_handler(nus_rx_data_handler_t rx_data_handler, nus_tx_ready_handler_t tx_ready_handler);
 uint32_t ble_nus_tx_data(void *data, size_t length);
+void ble_hid_scroll(int8_t wheel);
 void ble_get_addr_str(char addr_fmt[]);
 
 

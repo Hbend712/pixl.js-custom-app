@@ -56,6 +56,7 @@
 #include "ble_conn_params.h"
 #include "ble_hci.h"
 #include "ble_nus.h"
+#include "ble_hids.h"
 #include "bsp_btn_ble.h"
 #include "nordic_common.h"
 #include "nrf.h"
@@ -125,7 +126,8 @@
 
 
 
-BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT); /**< BLE NUS service instance. */
+BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT);
+BLE_HIDS_DEF(m_hids, NRF_SDH_BLE_TOTAL_LINK_COUNT); /**< BLE NUS service instance. */
 NRF_BLE_GATT_DEF(m_gatt);                         /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                           /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising);               /**< Advertising module instance. */
@@ -134,7 +136,7 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID; /**< Handle of the curr
 static uint16_t m_ble_nus_max_data_len =
     BLE_GATT_ATT_MTU_DEFAULT -
     3; /**< Maximum length of data (in bytes) that can be transmitted to the peer by the Nordic UART service module. */
-static ble_uuid_t m_adv_uuids[] = /**< Universally unique service identifier. */
+static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE}, {BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE}};
     {{BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE}};
 
 static nus_rx_data_handler_t m_nus_rx_data_handler =
@@ -256,6 +258,75 @@ static void nus_data_handler(ble_nus_evt_t *p_evt) {
 
 /**@brief Function for initializing services that will be used by the application.
  */
+
+
+void ble_hid_scroll(int8_t wheel)
+{
+    uint8_t report = (uint8_t)wheel;
+
+    if (m_conn_handle == BLE_CONN_HANDLE_INVALID) {
+        return;
+    }
+
+    (void)ble_hids_inp_rep_send(
+        &m_hids,
+        0,
+        sizeof(report),
+        &report,
+        m_conn_handle
+    );
+}
+
+static void hids_init(void) {
+    ret_code_t err_code;
+    ble_hids_init_t hids_init_obj;
+    ble_hids_inp_rep_init_t inp_rep;
+    
+    static uint8_t rep_map_data[] = {
+        0x05, 0x01,       // Usage Page (Generic Desktop)
+        0x09, 0x02,       // Usage (Mouse)
+        0xA1, 0x01,       // Collection (Application)
+        0x09, 0x01,       // Usage (Pointer)
+        0xA1, 0x00,       // Collection (Physical)
+        0x05, 0x01,       // Usage Page (Generic Desktop)
+        0x09, 0x38,       // Usage (Wheel)
+        0x15, 0x81,       // Logical Minimum (-127)
+        0x25, 0x7F,       // Logical Maximum (127)
+        0x75, 0x08,       // Report Size (8)
+        0x95, 0x01,       // Report Count (1)
+        0x81, 0x06,       // Input (Data, Variable, Relative)
+        0xC0,             // End Collection
+        0xC0              // End Collection
+    };
+
+    memset(&inp_rep, 0, sizeof(inp_rep));
+    inp_rep.max_len = 1;
+    inp_rep.rep_ref.report_id = 1;
+    inp_rep.rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
+    inp_rep.sec.cccd_wr = SEC_JUST_WORKS;
+    inp_rep.sec.wr = SEC_JUST_WORKS;
+    inp_rep.sec.rd = SEC_JUST_WORKS;
+
+    memset(&hids_init_obj, 0, sizeof(hids_init_obj));
+    hids_init_obj.is_mouse = true;
+    hids_init_obj.inp_rep_count = 1;
+    hids_init_obj.p_inp_rep_array = &inp_rep;
+    hids_init_obj.rep_map.data_len = sizeof(rep_map_data);
+    hids_init_obj.rep_map.p_data = rep_map_data;
+    hids_init_obj.hid_information.bcd_hid = BASE_USB_HID_SPEC_VERSION;
+    hids_init_obj.hid_information.b_country_code = 0;
+    hids_init_obj.hid_information.flags =
+        HID_INFO_FLAG_NORMALLY_CONNECTABLE_MSK;
+    hids_init_obj.rep_map.rd_sec = SEC_JUST_WORKS;
+    hids_init_obj.hid_information.rd_sec = SEC_JUST_WORKS;
+    hids_init_obj.protocol_mode_rd_sec = SEC_JUST_WORKS;
+    hids_init_obj.protocol_mode_wr_sec = SEC_JUST_WORKS;
+    hids_init_obj.ctrl_point_wr_sec = SEC_JUST_WORKS;
+
+    err_code = ble_hids_init(&m_hids, &hids_init_obj);
+    APP_ERROR_CHECK(err_code);
+}
+
 static void services_init(void) {
     uint32_t err_code;
     ble_nus_init_t nus_init;
@@ -266,6 +337,8 @@ static void services_init(void) {
 
     err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
     APP_ERROR_CHECK(err_code);
+
+    hids_init();
 
     // Initialize NUS.
     memset(&nus_init, 0, sizeof(nus_init));
