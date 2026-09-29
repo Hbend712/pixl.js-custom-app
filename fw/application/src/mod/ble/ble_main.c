@@ -137,7 +137,6 @@ static uint16_t m_ble_nus_max_data_len =
     BLE_GATT_ATT_MTU_DEFAULT -
     3; /**< Maximum length of data (in bytes) that can be transmitted to the peer by the Nordic UART service module. */
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE}, {BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE}};
-    {{BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE}};
 
 static nus_rx_data_handler_t m_nus_rx_data_handler =
     NULL; /**< Event handler to be called for handling received packets. */
