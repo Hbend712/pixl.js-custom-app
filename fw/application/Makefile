@@ -688,9 +688,9 @@ LDFLAGS += --specs=nano.specs
 LDFLAGS += -u _printf_float
 
 pixljs: CFLAGS += -D__HEAP_SIZE=4096
-pixljs: CFLAGS += -D__STACK_SIZE=8192
+pixljs: CFLAGS += -D__STACK_SIZE=4096
 pixljs: ASMFLAGS += -D__HEAP_SIZE=4096
-pixljs: ASMFLAGS += -D__STACK_SIZE=8192
+pixljs: ASMFLAGS += -D__STACK_SIZE=4096
 
 # Add standard libraries at the very end of the linker input, after all objects
 # that may need symbols provided by these libraries.
