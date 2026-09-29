@@ -313,7 +313,7 @@ static void hids_init(void) {
     hids_init_obj.p_inp_rep_array = &inp_rep;
     hids_init_obj.rep_map.data_len = sizeof(rep_map_data);
     hids_init_obj.rep_map.p_data = rep_map_data;
-    hids_init_obj.hid_information.bcd_hid = BASE_USB_HID_SPEC_VERSION;
+    hids_init_obj.hid_information.bcd_hid = 0x0111;
     hids_init_obj.hid_information.b_country_code = 0;
     hids_init_obj.hid_information.flags =
         HID_INFO_FLAG_NORMALLY_CONNECTABLE_MSK;
